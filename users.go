@@ -61,21 +61,17 @@ func Signin(w http.ResponseWriter, r *http.Request) {
 	db.Where("Email = ?", email).Find(&users)
 	defer db.Close()
 	if users.ID != 0 && users.Password == password {
-		var accounttype = users.Accounttype
-
 		var now = time.Now()
-		var hs256 = jwt.NewHMAC(jwt.SHA256, []byte("secret"))
-		var h = jwt.Header{
-			Type: accounttype,
-		}
-		var p = CustomPayload{
+		var hs256 = jwt.NewHS256([]byte("secret"))
+
+		p := CustomPayload{
 			Payload: jwt.Payload{
 				Issuer:         "gbrlsnchs",
 				Subject:        "someone",
 				Audience:       jwt.Audience{"https://golang.org", "https://jwt.io"},
-				ExpirationTime: now.Add(24 * 30 * 12 * time.Hour).Unix(),
-				NotBefore:      now.Add(30 * time.Minute).Unix(),
-				IssuedAt:       now.Unix(),
+				ExpirationTime: jwt.NumericDate(now.Add(24 * 30 * 12 * time.Hour)),
+				NotBefore:      jwt.NumericDate(now.Add(30 * time.Minute)),
+				IssuedAt:       jwt.NumericDate(now),
 				JWTID:          "foobar",
 			},
 			Name:    users.Name,
@@ -83,7 +79,8 @@ func Signin(w http.ResponseWriter, r *http.Request) {
 			Userid:  users.ID,
 			Account: users.Accounttype,
 		}
-		token, err := jwt.Sign(h, p, hs256)
+
+		token, err := jwt.Sign(p, hs256)
 		if err != nil {
 			// Handle error.
 		}
@@ -225,21 +222,17 @@ func Signinwithgoogle(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if users.ID != 0 && users.Gid == gid {
-			var accounttype = users.Accounttype
 
 			var now = time.Now()
-			var hs256 = jwt.NewHMAC(jwt.SHA256, []byte("secret"))
-			var h = jwt.Header{
-				Type: accounttype,
-			}
+			var hs256 = jwt.NewHS256([]byte("secret"))
 			var p = CustomPayload{
 				Payload: jwt.Payload{
 					Issuer:         "gbrlsnchs",
 					Subject:        "someone",
 					Audience:       jwt.Audience{"https://golang.org", "https://jwt.io"},
-					ExpirationTime: now.Add(1).Unix(),
-					NotBefore:      now.Add(1 * time.Minute).Unix(),
-					IssuedAt:       now.Unix(),
+					ExpirationTime: jwt.NumericDate(now.Add(24 * 30 * 12 * time.Hour)),
+					NotBefore:      jwt.NumericDate(now.Add(30 * time.Minute)),
+					IssuedAt:       jwt.NumericDate(now),
 					JWTID:          "foobar",
 				},
 				Name:    users.Name,
@@ -247,7 +240,7 @@ func Signinwithgoogle(w http.ResponseWriter, r *http.Request) {
 				Userid:  users.ID,
 				Account: users.Accounttype,
 			}
-			token, err := jwt.Sign(h, p, hs256)
+			token, err := jwt.Sign(p, hs256)
 			if err != nil {
 				// Handle error.
 			}

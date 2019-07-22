@@ -82,6 +82,7 @@ func Addtocart(w http.ResponseWriter, r *http.Request) {
 	productid := converttoint(vars["productid"])
 
 	db.Create(&Carts{Userid: userid, Productid: productid})
+
 	defer db.Close()
 	/*db.Where("userid = ?", ).Find(&cart)*/
 }
@@ -154,6 +155,7 @@ func Addtofav(w http.ResponseWriter, r *http.Request) {
 	productid := converttoint(vars["productid"])
 
 	db.Create(&Favs{Userid: userid, Productid: productid})
+	fmt.Println("added")
 	/*db.Where("userid = ?", ).Find(&cart)*/
 	defer db.Close()
 }
